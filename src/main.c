@@ -3,11 +3,11 @@
 
 #include "resources/resources.h"
 #include "logging/logging.h"
-
 #include "irc/irc.h"
+#include "tls/tls.h"
 
 int main(int argc, const char *argv[]) {
-  irc_initialize();
+  tls_initialize();
 
   bool connected = irc_connect("irc.blesstherains.africa", 6697, "test-bot", "test-bot", "hello");
   if (!connected) {
