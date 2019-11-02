@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "../logging/logging.h"
 #include "../tls/tls.h"
 
@@ -50,8 +52,70 @@ void irc_write(const char *format, ...) {
   free(message);
 }
 
-const char *irc_read() {
-  return tls_readLine(irc_tls, IRC_MESSAGE_TIMEOUT, IRC_MESSAGE_MAX_SIZE);
+void irc_pong(const char *server, const char *server2) {
+  irc_write("PONG %s %s", server, server2);
+}
+
+irc_message_t *irc_read() {
+  irc_message_t *message = malloc(sizeof(irc_message_t));
+  if (message == 0) {
+    log(LOG_ERROR, "Unable to allocate message");
+    return 0;
+  }
+  memset(message, 0, sizeof(irc_message_t));
+
+  char *buffer = tls_readLine(irc_tls, IRC_MESSAGE_TIMEOUT, IRC_MESSAGE_MAX_SIZE);
+  if (buffer == 0) {
+    log(LOG_ERROR, "Unable to read buffer");
+    return 0;
+  }
+
+  size_t messageLength = strlen(buffer);
+  size_t start = 0;
+  for (size_t i = 0; i < messageLength + 1; i++) {
+    if (buffer[i] == ' ' || buffer[i] == 0) {
+      size_t valueLength = i - start;
+      if (message->sender == 0) {
+        // The start of the username is always ':'
+        start++;
+        if (valueLength > 1)
+          valueLength--;
+
+        // The username ends with '!'
+        for (size_t j = 0; j < valueLength; j++) {
+          if (buffer[start + j] == '!') {
+            valueLength = j;
+            break;
+          }
+        }
+
+        message->sender = malloc(sizeof(char) * (valueLength + 1));
+        memcpy(message->sender, buffer + start, (valueLength));
+        message->sender[valueLength] = 0;
+      } else if (message->type == 0) {
+        message->type = malloc(sizeof(char) * (valueLength + 1));
+        memcpy(message->type, buffer + start, (valueLength));
+        message->type[valueLength] = 0;
+      } else if (message->target == 0) {
+        message->target = malloc(sizeof(char) * (valueLength + 1));
+        memcpy(message->target, buffer + start, (valueLength));
+        message->target[valueLength] = 0;
+      } else if (message->message == 0) {
+        // The start of the message is always ':'
+        start++;
+        if (valueLength > 1)
+          valueLength--;
+
+        message->message = malloc(sizeof(char) * (valueLength + 1));
+        memcpy(message->message, buffer + start, (valueLength));
+        message->message[valueLength] = 0;
+      }
+
+      start = i + 1;
+    }
+  }
+
+  return message;
 }
 
 void irc_join(const char *channel) {

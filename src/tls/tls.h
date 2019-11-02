@@ -35,6 +35,6 @@ ssize_t tls_getAvailableBytes(tls_t *tls);
 int tls_pollForData(tls_t *tls, int timeout);
 size_t tls_write(tls_t *tls, const char *buffer, size_t bufferSize);
 void tls_disconnect(tls_t *tls);
-const char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes);
+char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes);
 
 #endif

@@ -156,7 +156,7 @@ bool tls_setNonBlocking(tls_t *tls) {
   return true;
 }
 
-const char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes) {
+char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes) {
   size_t offset = 0;
   while (true) {
     int pollStatus = tls_pollForData(tls, timeout);
