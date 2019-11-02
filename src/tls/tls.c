@@ -158,27 +158,25 @@ bool tls_setNonBlocking(tls_t *tls) {
 
 const char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes) {
   size_t offset = 0;
-  uint8_t timeouts = 0;
   while (true) {
-    bool dataIsAvailable = tls_pollForData(tls, timeout);
-    if (timeouts++ > 5) {
-      log(LOG_WARNING, "Peer timed out five times");
-      // TODO: This should be handled much better, may drop messages right now
-      ssize_t bytesAvailable = tls_getAvailableBytes(tls);
-      char *buffer = 0;
-      tls_read(tls, &buffer, bytesAvailable, READ_FLAGS_NONE);
-      return tls_readLine(tls, timeout, maxBytes);
+    int pollStatus = tls_pollForData(tls, timeout);
+
+    if (pollStatus == TLS_POLL_STATUS_FAILED) {
+      log(LOG_ERROR, "Unable to poll");
+      return 0;
     }
 
-    if (!dataIsAvailable)
-      continue;
+    if (pollStatus == TLS_POLL_STATUS_NOT_AVAILABLE) {
+      log(LOG_DEBUG, "Polling timed out");
+      return 0;
+    }
 
     ssize_t bytesAvailable = tls_getAvailableBytes(tls);
     if (bytesAvailable == 0) {
       // Nothing to read, wait for next event as specified by the polling above
       continue;
     } else if (bytesAvailable < 0) {
-      // Failed to get available bytes
+      log(LOG_ERROR, "Unable to get the number of available bytes");
       return 0;
     } else if ((size_t)bytesAvailable >= maxBytes) {
       // Don't process more than max bytes
@@ -188,14 +186,23 @@ const char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes) {
     // Read the request without consuming the content
     char *buffer = 0;
     size_t bytesReceived = 0;
-    bytesReceived = tls_read(tls, &buffer, bytesAvailable, READ_FLAGS_PEEK);
+    bytesReceived = tls_read(tls, &buffer, bytesAvailable, READ_FLAGS_NONE);
     // Nothing read, wait for next event
     if (buffer == 0)
       continue;
 
+    // Add the read buffer to the connection's buffer
+    if (tls->buffer == 0) {
+      tls->buffer = buffer;
+    } else {
+      tls->buffer = realloc(tls->buffer, sizeof(char) * (tls->bufferSize + bytesReceived));
+      memcpy(tls->buffer + tls->bufferSize, buffer, bytesReceived);
+      tls->bufferSize += bytesReceived;
+    }
+
     ssize_t lineLength = -1;
     for (; offset < bytesReceived; offset++) {
-      if (buffer[offset] == '\n') {
+      if (tls->buffer[offset] == '\n') {
         lineLength = offset + 1;
         break;
       }
@@ -211,22 +218,21 @@ const char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes) {
       continue;
     }
 
-    bytesReceived = tls_read(tls, &buffer, lineLength, READ_FLAGS_NONE);
-    // Could not read message
-    if (buffer == 0)
-      return 0;
-
     // Strip trailing CRLF
-    buffer[bytesReceived - 1] = 0;
-    buffer[bytesReceived - 2] = 0;
+    tls->buffer[bytesReceived - 1] = 0;
+    tls->buffer[bytesReceived - 2] = 0;
 
-    return buffer;
+    char *result = tls->buffer;
+    tls->buffer = 0;
+    tls->bufferSize = 0;
+
+    return result;
   }
 }
 
-bool tls_pollForData(tls_t *tls, int timeout) {
+int tls_pollForData(tls_t *tls, int timeout) {
   if (SSL_pending(tls->ssl) > 0)
-    return true;
+    return TLS_POLL_STATUS_AVAILABLE;
 
   // Set up structures necessary for polling
   struct pollfd descriptors[1];
@@ -240,13 +246,13 @@ bool tls_pollForData(tls_t *tls, int timeout) {
   int status = poll(descriptors, 1, timeout);
   if (status < -1) {
     log(LOG_ERROR, "Could not wait for connection to send data");
-    return false;
+    return TLS_POLL_STATUS_FAILED;
   } else if (status == 0) {
     log(LOG_ERROR, "The connection timed out");
-    return false;
+    return TLS_POLL_STATUS_NOT_AVAILABLE;
   }
 
-  return true;
+  return TLS_POLL_STATUS_AVAILABLE;
 }
 
 ssize_t tls_getAvailableBytes(tls_t *tls) {
