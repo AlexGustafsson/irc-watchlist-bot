@@ -24,6 +24,7 @@ int main(int argc, const char *argv[]) {
   char *user = getenv("IRC_USER");
   char *nick = getenv("IRC_NICK");
   char *gecos = getenv("IRC_GECOS");
+  char *channel = getenv("IRC_CHANNEL");
 
   tls_initialize();
 
@@ -33,7 +34,7 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
 
-  irc_join(main_irc, "#bot-test");
+  irc_join(main_irc, channel);
 
   while (true) {
     main_message = irc_read(main_irc);
