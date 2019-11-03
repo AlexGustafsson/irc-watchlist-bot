@@ -17,9 +17,16 @@ int main(int argc, const char *argv[]) {
   signal(SIGINT, main_handleSignalSIGINT);
   signal(SIGTERM, main_handleSignalSIGTERM);
 
+  char *hostname = getenv("IRC_SERVER");
+  char *portString = getenv("IRC_PORT");
+  uint16_t port = atoi(portString);
+  char *user = getenv("IRC_USER");
+  char *nick = getenv("IRC_NICK");
+  char *gecos = getenv("IRC_GECOS");
+
   tls_initialize();
 
-  main_irc = irc_connect("irc.blesstherains.africa", 6697, "test-bot", "test-bot", "hello");
+  main_irc = irc_connect(hostname, port, user, nick, gecos);
   if (main_irc == 0) {
     log(LOG_ERROR, "Unable to connect to the server");
     return 1;
