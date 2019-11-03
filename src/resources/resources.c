@@ -73,7 +73,7 @@ uint8_t resources_bestMatch(size_t *occurances) {
   if (bestIndex == 0)
     return COUNTRY_USA;
   else if (bestIndex == 1)
-    return COUNTRY_USA;
+    return COUNTRY_USA_NSA;
 
   return COUNTRY_NO_MATCH;
 }

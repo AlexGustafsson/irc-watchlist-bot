@@ -11,6 +11,7 @@
 
 #define COUNTRY_NO_MATCH 0
 #define COUNTRY_USA 1
+#define COUNTRY_USA_NSA 2
 
 // Read a file (does not follow symlinks)
 char *resources_loadFile(const char *filePath) __attribute__((nonnull(1)));

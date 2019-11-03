@@ -43,33 +43,10 @@ int main(int argc, const char *argv[]) {
 
     log(LOG_INFO, "Got message '%s' from '%s' in '%s'", main_message->message, main_message->sender, main_message->target);
 
-    size_t messageLength = strlen(main_message->message);
-    char *message = main_message->message;
-    size_t start = 0;
-    size_t occurances[RESOURCES_DATA_SOURCES] = {0};
-    for (size_t i = 0; i < messageLength + 1; i++) {
-      if (message[i] == ' ' || message[i] == 0) {
-        size_t wordLength = i - start;
-
-        char *word = malloc(sizeof(char) * (wordLength + 1));
-        memcpy(word, message + start, (wordLength));
-        word[wordLength] = 0;
-
-        log(LOG_DEBUG, "Word: %s", word);
-        resources_countWord(word, occurances);
-
-        free(word);
-        start = i + 1;
-      }
-    }
-
-    uint8_t bestMatch = resources_bestMatch(occurances);
-
-    switch (bestMatch) {
-      case COUNTRY_USA:
-        irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "USA is watching");
-        break;
-    }
+    if (strcasecmp(main_message->message, "watchlist-bot: help") == 0)
+      main_handleHelp();
+    else
+      main_handleWatchlist();
 
     irc_freeMessage(main_message);
     main_message = 0;
@@ -78,6 +55,43 @@ int main(int argc, const char *argv[]) {
   irc_free(main_irc);
   main_irc = 0;
   log(LOG_DEBUG, "Everything freed, closing");
+}
+
+void main_handleHelp() {
+  irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "I keep track of words used in nations' watchlists. I currently handle English words watched by NSA and USA in general.");
+}
+
+void main_handleWatchlist() {
+  size_t messageLength = strlen(main_message->message);
+  char *message = main_message->message;
+  size_t start = 0;
+  size_t occurances[RESOURCES_DATA_SOURCES] = {0};
+  for (size_t i = 0; i < messageLength + 1; i++) {
+    if (message[i] == ' ' || message[i] == 0) {
+      size_t wordLength = i - start;
+
+      char *word = malloc(sizeof(char) * (wordLength + 1));
+      memcpy(word, message + start, (wordLength));
+      word[wordLength] = 0;
+
+      resources_countWord(word, occurances);
+
+      free(word);
+      start = i + 1;
+    }
+  }
+
+  uint8_t bestMatch = resources_bestMatch(occurances);
+
+  switch (bestMatch) {
+    case COUNTRY_USA:
+      irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "USA is watching 👀");
+      break;
+    case COUNTRY_USA_NSA:
+      irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "NSA is watching 👀");
+      break;
+
+  }
 }
 
 // Handle SIGINT (CTRL + C)
