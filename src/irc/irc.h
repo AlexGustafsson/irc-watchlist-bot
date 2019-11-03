@@ -1,10 +1,10 @@
 #ifndef IRC_H
 #define IRC_H
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include "../tls/tls.h"
 

@@ -1,11 +1,11 @@
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 
-#include "resources/resources.h"
-#include "logging/logging.h"
 #include "irc/irc.h"
+#include "logging/logging.h"
+#include "resources/resources.h"
 #include "tls/tls.h"
 
 #include "main.h"
@@ -51,7 +51,8 @@ int main(int argc, const char *argv[]) {
       irc_freeMessage(main_message);
       main_message = 0;
       continue;
-    } if (strcmp(main_message->type, "PRIVMSG") != 0) {
+    }
+    if (strcmp(main_message->type, "PRIVMSG") != 0) {
       irc_freeMessage(main_message);
       main_message = 0;
       continue;
@@ -98,13 +99,12 @@ void main_handleWatchlist() {
   uint8_t bestMatch = resources_bestMatch(occurances);
 
   switch (bestMatch) {
-    case COUNTRY_USA:
-      irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "USA is watching 👀");
-      break;
-    case COUNTRY_USA_NSA:
-      irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "NSA is watching 👀");
-      break;
-
+  case COUNTRY_USA:
+    irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "USA is watching 👀");
+    break;
+  case COUNTRY_USA_NSA:
+    irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "NSA is watching 👀");
+    break;
   }
 }
 

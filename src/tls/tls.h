@@ -1,8 +1,8 @@
 #ifndef TLS_H
 #define TLS_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <openssl/ssl.h>
 
