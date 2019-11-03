@@ -114,12 +114,13 @@ irc_message_t *irc_read(irc_t *irc) {
       } else if (message->message == 0) {
         // The start of the message is always ':'
         start++;
-        if (valueLength > 1)
-          valueLength--;
+        // The message occupies the rest of the string
+        valueLength = messageLength - start;
 
         message->message = malloc(sizeof(char) * (valueLength + 1));
         memcpy(message->message, buffer + start, (valueLength));
         message->message[valueLength] = 0;
+        break;
       }
 
       start = i + 1;
