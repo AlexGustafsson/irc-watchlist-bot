@@ -21,6 +21,7 @@ irc_t *irc_connect(char *hostname, uint16_t port, char *user, char *nick, char *
   irc->tls = tls_connect(hostname, port);
   if (irc->tls == 0) {
     log(LOG_ERROR, "Unable to connect to server '%s'", hostname);
+    free(irc);
     return 0;
   }
 
@@ -76,6 +77,7 @@ irc_message_t *irc_read(irc_t *irc) {
   char *buffer = tls_readLine(irc->tls, IRC_MESSAGE_TIMEOUT, IRC_MESSAGE_MAX_SIZE);
   if (buffer == 0) {
     log(LOG_ERROR, "Unable to read buffer");
+    free(message);
     return 0;
   }
 
@@ -124,6 +126,7 @@ irc_message_t *irc_read(irc_t *irc) {
     }
   }
 
+  free(buffer);
   return message;
 }
 
@@ -134,4 +137,17 @@ void irc_join(irc_t *irc, const char *channel) {
 void irc_free(irc_t *irc) {
   tls_free(irc->tls);
   free(irc);
+}
+
+void irc_freeMessage(irc_message_t *message) {
+  if (message->sender != 0)
+    free(message->sender);
+  if (message->type != 0)
+    free(message->type);
+  if (message->target != 0)
+    free(message->target);
+  if (message->message != 0)
+    free(message->message);
+
+  free(message);
 }

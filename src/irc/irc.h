@@ -43,5 +43,6 @@ void irc_pong(irc_t *irc, const char *server, const char *server2);
 irc_message_t *irc_read(irc_t *irc);
 
 void irc_free(irc_t *irc);
+void irc_freeMessage(irc_message_t *message);
 
 #endif

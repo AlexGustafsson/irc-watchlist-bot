@@ -47,15 +47,19 @@ tls_t *tls_connect(const char *hostname, uint16_t port) {
   tls->socketId = socket(AF_INET, SOCK_STREAM, 0);
   if (tls->socketId == -1) {
     log(LOG_ERROR, "Unable to create a socket");
+    free(tls);
     return 0;
   }
 
-  if (!tls_setNonBlocking(tls))
+  if (!tls_setNonBlocking(tls)) {
+    free(tls);
     return 0;
+  }
 
   struct hostent *hostent = gethostbyname(hostname);
   if (hostent == 0) {
     log(LOG_ERROR, "Unable to get host by name for server");
+    free(tls);
     return 0;
   }
 
@@ -68,19 +72,21 @@ tls_t *tls_connect(const char *hostname, uint16_t port) {
 
   if (connect(tls->socketId, (struct sockaddr *)&socketAddress, sizeof(struct sockaddr_in)) == 0) {
     log(LOG_ERROR, "Unable to connect to server: %s", strerror(errno));
+    free(tls);
     return 0;
   }
 
   tls->ssl = SSL_new(tls_sslContext);
   if (tls->ssl == 0) {
     log(LOG_ERROR, "Unable to instantiate SSL object");
+    free(tls);
     return 0;
   }
 
   SSL_set_fd(tls->ssl, tls->socketId);
   if (SSL_set_tlsext_host_name(tls->ssl, hostname) != 1) {
     log(LOG_ERROR, "Unable to set the server's hostname");
-    SSL_free(tls->ssl);
+    tls_free(tls);
     return 0;
   }
 
@@ -99,7 +105,7 @@ tls_t *tls_connect(const char *hostname, uint16_t port) {
     int status = SSL_connect(tls->ssl);
     if (status == 0) {
       log(LOG_ERROR, "Unable to connect to server");
-      SSL_free(tls->ssl);
+      tls_free(tls);
 
       return 0;
     } else if (status < 0) {
@@ -110,7 +116,7 @@ tls_t *tls_connect(const char *hostname, uint16_t port) {
         int status = poll(readDescriptors, 1, -1);
         if (status < -1) {
           log(LOG_ERROR, "Could not wait for connection to be readable");
-          SSL_free(tls->ssl);
+          tls_free(tls);
 
           return 0;
         }
@@ -120,13 +126,13 @@ tls_t *tls_connect(const char *hostname, uint16_t port) {
         int status = poll(writeDescriptors, 1, -1);
         if (status < -1) {
           log(LOG_ERROR, "Could not wait for connection to be writable");
-          SSL_free(tls->ssl);
+          tls_free(tls);
 
           return 0;
         }
       } else {
         log(LOG_ERROR, "Unable to connect to server. Got code %d", error);
-        SSL_free(tls->ssl);
+        tls_free(tls);
 
         return 0;
       }
@@ -337,12 +343,12 @@ void tls_disconnect(tls_t *tls) {
     if (close(tls->socketId) == -1)
       log(LOG_ERROR, "Unable to close TLS connection. Got error %d (%s)", errno, strerror(errno));
   }
-  SSL_free(tls->ssl);
-  free(tls);
 }
 
 void tls_free(tls_t *tls) {
+  tls_disconnect(tls);
   SSL_free(tls->ssl);
   if (tls->buffer != 0)
     free(tls->buffer);
+  free(tls);
 }
