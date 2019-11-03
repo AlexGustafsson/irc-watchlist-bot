@@ -36,5 +36,6 @@ int tls_pollForData(tls_t *tls, int timeout);
 size_t tls_write(tls_t *tls, const char *buffer, size_t bufferSize);
 void tls_disconnect(tls_t *tls);
 char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes);
+void tls_free(tls_t *tls);
 
 #endif

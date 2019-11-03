@@ -1,32 +1,41 @@
 #include <string.h>
 
 #include "../logging/logging.h"
-#include "../tls/tls.h"
 
 #include "irc.h"
 
-tls_t *irc_tls = 0;
+irc_t *irc_connect(char *hostname, uint16_t port, char *user, char *nick, char *gecos) {
+  irc_t *irc = malloc(sizeof(irc_t));
+  if (irc == 0) {
+    log(LOG_ERROR, "Unable to allocate IRC structure");
+    return 0;
+  }
+  memset(irc, 0, sizeof(irc_t));
 
-bool irc_connect(const char *hostname, uint16_t port, const char *user, const char *nick, const char *gecos) {
-  tls_t *tls = tls_connect(hostname, port);
-  if (tls == 0) {
+  irc->hostname = hostname;
+  irc->port = port;
+  irc->user = user;
+  irc->nick = nick;
+  irc->gecos = gecos;
+
+  irc->tls = tls_connect(hostname, port);
+  if (irc->tls == 0) {
     log(LOG_ERROR, "Unable to connect to server '%s'", hostname);
-    return false;
+    return 0;
   }
 
   log(LOG_DEBUG, "Successfully connected to server '%s:%d'", hostname, port);
-  irc_tls = tls;
 
   log(LOG_DEBUG, "Registering as '%s' and gecos '%s'", user, gecos);
-  irc_write("USER %s %s %s :%s\r\n", user, user, user, gecos);
+  irc_write(irc, "USER %s %s %s :%s\r\n", user, user, user, gecos);
 
   log(LOG_DEBUG, "Using nickname '%s'", nick);
-  irc_write("NICK %s\r\n", nick);
+  irc_write(irc, "NICK %s\r\n", nick);
 
-  return true;
+  return irc;
 }
 
-void irc_write(const char *format, ...) {
+void irc_write(irc_t *irc, const char *format, ...) {
   va_list arguments;
 
   va_start(arguments, format);
@@ -48,15 +57,15 @@ void irc_write(const char *format, ...) {
   vsnprintf(message, messageLength + 1, format, arguments);
   va_end(arguments);
 
-  tls_write(irc_tls, message, messageLength);
+  tls_write(irc->tls, message, messageLength);
   free(message);
 }
 
-void irc_pong(const char *server, const char *server2) {
-  irc_write("PONG %s %s", server, server2);
+void irc_pong(irc_t *irc, const char *server, const char *server2) {
+  irc_write(irc, "PONG %s %s", server, server2);
 }
 
-irc_message_t *irc_read() {
+irc_message_t *irc_read(irc_t *irc) {
   irc_message_t *message = malloc(sizeof(irc_message_t));
   if (message == 0) {
     log(LOG_ERROR, "Unable to allocate message");
@@ -64,7 +73,7 @@ irc_message_t *irc_read() {
   }
   memset(message, 0, sizeof(irc_message_t));
 
-  char *buffer = tls_readLine(irc_tls, IRC_MESSAGE_TIMEOUT, IRC_MESSAGE_MAX_SIZE);
+  char *buffer = tls_readLine(irc->tls, IRC_MESSAGE_TIMEOUT, IRC_MESSAGE_MAX_SIZE);
   if (buffer == 0) {
     log(LOG_ERROR, "Unable to read buffer");
     return 0;
@@ -118,6 +127,11 @@ irc_message_t *irc_read() {
   return message;
 }
 
-void irc_join(const char *channel) {
-  irc_write("JOIN %s\r\n", channel);
+void irc_join(irc_t *irc, const char *channel) {
+  irc_write(irc, "JOIN %s\r\n", channel);
+}
+
+void irc_free(irc_t *irc) {
+  tls_free(irc->tls);
+  free(irc);
 }

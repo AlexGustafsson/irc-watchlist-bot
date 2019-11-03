@@ -6,8 +6,20 @@
 #include <sys/socket.h>
 #include <stdbool.h>
 
+#include "../tls/tls.h"
+
 #define IRC_MESSAGE_MAX_SIZE 1024
 #define IRC_MESSAGE_TIMEOUT -1
+
+typedef struct {
+  char *hostname;
+  uint16_t port;
+  char *user;
+  char *nick;
+  char *gecos;
+
+  tls_t *tls;
+} irc_t;
 
 typedef struct {
   char *sender;
@@ -16,20 +28,20 @@ typedef struct {
   char *message;
 } irc_message_t;
 
-bool irc_connect(const char *server, uint16_t port, const char *user, const char *nick, const char *gecos);
+irc_t *irc_connect(char *hostname, uint16_t port, char *user, char *nick, char *gecos);
 
-void irc_disconnect();
+void irc_disconnect(irc_t *irc);
 
-void irc_join(const char *channel);
+void irc_join(irc_t *irc, const char *channel);
 
-void irc_leave(const char *channel);
+void irc_write(irc_t *irc, const char *format, ...);
 
-void irc_write(const char *format, ...);
+void irc_send(irc_t *irc, const char *channel, const char *message);
 
-void irc_send(const char *channel, const char *message);
+void irc_pong(irc_t *irc, const char *server, const char *server2);
 
-void irc_pong(const char *server, const char *server2);
+irc_message_t *irc_read(irc_t *irc);
 
-irc_message_t *irc_read();
+void irc_free(irc_t *irc);
 
 #endif

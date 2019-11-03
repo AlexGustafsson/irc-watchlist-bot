@@ -10,16 +10,16 @@
 int main(int argc, const char *argv[]) {
   tls_initialize();
 
-  bool connected = irc_connect("irc.blesstherains.africa", 6697, "test-bot", "test-bot", "hello");
-  if (!connected) {
+  irc_t *irc = irc_connect("irc.blesstherains.africa", 6697, "test-bot", "test-bot", "hello");
+  if (irc == 0) {
     log(LOG_ERROR, "Unable to connect to the server");
     return 1;
   }
 
-  irc_join("#bot-test");
+  irc_join(irc, "#bot-test");
 
   while (true) {
-    irc_message_t *message = irc_read();
+    irc_message_t *message = irc_read(irc);
     if (message == 0) {
       log(LOG_ERROR, "Unable to read message from server");
       return 1;

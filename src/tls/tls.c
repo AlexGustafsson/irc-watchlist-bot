@@ -340,3 +340,9 @@ void tls_disconnect(tls_t *tls) {
   SSL_free(tls->ssl);
   free(tls);
 }
+
+void tls_free(tls_t *tls) {
+  SSL_free(tls->ssl);
+  if (tls->buffer != 0)
+    free(tls->buffer);
+}
