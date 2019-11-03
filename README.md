@@ -6,6 +6,50 @@
 
 ##### Quickstart
 
+**Build and run using Docker**
+
+Make sure you meet the following prerequisites:
+* `docker` is installed locally or configured to use another server
+
+```Bash
+# Clone the repository (or download it)
+git clone git@github.com:AlexGustafsson/irc-watchlist-bot.git
+
+# Build the wsic docker image
+cd wsic && make docker
+
+# Run
+docker run -d \
+-e IRC_SERVER='irc.example.org' \
+-e IRC_PORT='6697' \
+-e IRC_CHANNEL='#random' \
+-e IRC_NICK='watchlist-bot' \
+-e IRC_USER='watchlist-bot' \
+-e IRC_GECOS='Watchlist Bot v0.1.0 (github.com/AlexGustafsson/irc-watchlist-bot)' \
+axgn/irc-watchlist-bot
+```
+
+**Build and run from source**
+
+Make sure you meet the following prerequisites:
+* `$CC` refers to `gcc` 9 (`brew install gcc` on macOS) or `clang` 7
+* `xxd` is installed (default on many distributions)
+* `gnu sed` is installed and available as `sed` (default on many distributions, `brew install gnu-sed` on macOS)
+* `openssl 1.1.1` is available in the system include path or `/usr/local/opt/openssl@1.1/include` (`apt install libssl-dev` on Ubuntu, `brew install openssl@1.1` on macOS)
+
+_NOTE: For instructions on how to install all the prerequisites and building on Ubuntu, refer to the [Dockerfile](https://github.com/AlexGustafsson/irc-watchlist-bot/blob/master/Dockerfile)._
+
+```Bash
+# Clone the repository (or download it)
+git clone git@github.com:AlexGustafsson/irc-watchlist-bot.git
+
+# Build wsic
+cd irc-watchlist-bot && make
+
+# Run
+./build/irc-watchlist-bot
+```
+
 ```Bash
 # Clone the repository
 git clone https://github.com/AlexGustafsson/irc-watchlist-bot
@@ -18,19 +62,6 @@ docker run -d -e IRC_SERVER='irc.example.org' --restart always axgn/irc-watchlis
 ```
 
 ### Documentation
-
-#### Running with Docker
-
-```Bash
-docker run -d \
--e IRC_SERVER='irc.example.org' \
--e IRC_PORT='6697' \
--e IRC_CHANNEL='#random' \
--e IRC_NICK='watchlist-bot' \
--e IRC_USER='watchlist-bot' \
--e IRC_GECOS='Watchlist Bot v0.1.0 (github.com/AlexGustafsson/irc-watchlist-bot)' \
-axgn/irc-watchlist-bot
-```
 
 #### Invoking via IRC
 
@@ -46,17 +77,17 @@ Any contribution is welcome. If you're not able to code it yourself, perhaps som
 
 Clone the repository:
 ```
+# Clone the repository
 git clone https://github.com/AlexGustafsson/irc-watchlist-bot && cd irc-watchlist-bot
-```
 
-Build:
-```
-make
-```
-
-Format code:
-```
+# Format the code
 make format
+
+# Build and run a debugging build (memory analyzer and GDB debugging enabled)
+make debug && ASAN_OPTIONS=detect_leaks=1 ./build/irc-watchlist-bot.debug
+
+# Build and run a release build
+make build && ./irc-watchlist-bot
 ```
 
 ### Disclaimer
