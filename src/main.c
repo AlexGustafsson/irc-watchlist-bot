@@ -43,6 +43,8 @@ int main(int argc, const char *argv[]) {
       break;
     }
 
+    log(LOG_DEBUG, "Got message '%s' (type '%s') from '%s' in '%s'", main_message->message, main_message->type, main_message->sender, main_message->target);
+
     if (strcmp(main_message->type, "PING") == 0) {
       irc_write(main_irc, "PONG :%s\r\n", main_message->message);
 
@@ -54,8 +56,6 @@ int main(int argc, const char *argv[]) {
       main_message = 0;
       continue;
     }
-
-    log(LOG_INFO, "Got message '%s' from '%s' in '%s'", main_message->message, main_message->sender, main_message->target);
 
     if (strcasecmp(main_message->message, "watchlist-bot: help") == 0)
       main_handleHelp();

@@ -193,9 +193,9 @@ char *tls_readLine(tls_t *tls, int timeout, size_t maxBytes) {
     char *buffer = 0;
     size_t bytesReceived = 0;
     bytesReceived = tls_read(tls, &buffer, bytesAvailable, READ_FLAGS_NONE);
-    // Nothing read, wait for next event
+    // Reading failed
     if (buffer == 0)
-      continue;
+      return 0;
 
     // Add the read buffer to the connection's buffer
     if (tls->buffer == 0) {
@@ -275,7 +275,9 @@ ssize_t tls_getAvailableBytes(tls_t *tls) {
     char *buffer = 0;
     // Read one byte without blocking to make OpenSSL process bytes
     tls_read(tls, &buffer, 1, READ_FLAGS_PEEK);
-    if (buffer != 0)
+    if (buffer == 0)
+      return -1;
+    else
       free(buffer);
   }
 
@@ -296,11 +298,11 @@ size_t tls_read(tls_t *tls, char **buffer, size_t bytesToRead, int flags) {
   if (result != 1) {
     int error = SSL_get_error(tls->ssl, result);
     if (error == SSL_ERROR_WANT_READ)
-      log(LOG_ERROR, "Could not write to peer. Socket wants read");
+      log(LOG_ERROR, "Could not read from peer. Socket wants read");
     else if (error == SSL_ERROR_WANT_WRITE)
-      log(LOG_ERROR, "Could not write to peer. Socket wants write");
+      log(LOG_ERROR, "Could not read from peer. Socket wants write");
     else
-      log(LOG_ERROR, "Could not write to peer. Got code %d (%s)", error, ERR_error_string(error, 0));
+      log(LOG_ERROR, "Could not read from peer. Got code %d (%s)", error, ERR_error_string(error, 0));
 
     return 0;
   }

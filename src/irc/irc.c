@@ -87,6 +87,18 @@ irc_message_t *irc_read(irc_t *irc) {
     if (buffer[i] == ' ' || buffer[i] == 0) {
       size_t valueLength = i - start;
       if (message->sender == 0) {
+        if (strncmp(buffer, "PING", 4) == 0) {
+          message->type = malloc(sizeof(char) * 5);
+          memcpy(message->type, "PING", 4);
+          message->type[4] = 0;
+
+          message->message = malloc(sizeof(char) * (messageLength - 5 + 1));
+          memcpy(message->message, buffer + 5, messageLength - 5);
+          message->message[messageLength - 5] = 0;
+
+          break;
+        }
+
         // The start of the username is always ':'
         start++;
         if (valueLength > 1)
