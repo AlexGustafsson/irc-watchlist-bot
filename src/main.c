@@ -43,8 +43,13 @@ int main(int argc, const char *argv[]) {
       break;
     }
 
-    // Ignore anything but regular messages
-    if (strcmp(main_message->type, "PRIVMSG") != 0) {
+    if (strcmp(main_message->type, "PING") == 0) {
+      irc_write(main_irc, "PONG :%s\r\n", main_message->message);
+
+      irc_freeMessage(main_message);
+      main_message = 0;
+      continue;
+    } if (strcmp(main_message->type, "PRIVMSG") != 0) {
       irc_freeMessage(main_message);
       main_message = 0;
       continue;
