@@ -42,6 +42,35 @@ int main(int argc, const char *argv[]) {
     }
 
     log(LOG_INFO, "Got message '%s' from '%s' in '%s'", main_message->message, main_message->sender, main_message->target);
+
+    size_t messageLength = strlen(main_message->message);
+    char *message = main_message->message;
+    size_t start = 0;
+    size_t occurances[RESOURCES_DATA_SOURCES] = {0};
+    for (size_t i = 0; i < messageLength + 1; i++) {
+      if (message[i] == ' ' || message[i] == 0) {
+        size_t wordLength = i - start;
+
+        char *word = malloc(sizeof(char) * (wordLength + 1));
+        memcpy(word, message + start, (wordLength));
+        word[wordLength] = 0;
+
+        log(LOG_DEBUG, "Word: %s", word);
+        resources_countWord(word, occurances);
+
+        free(word);
+        start = i + 1;
+      }
+    }
+
+    uint8_t bestMatch = resources_bestMatch(occurances);
+
+    switch (bestMatch) {
+      case COUNTRY_USA:
+        irc_write(main_irc, "PRIVMSG %s :%s\r\n", main_message->target, "USA is watching");
+        break;
+    }
+
     irc_freeMessage(main_message);
     main_message = 0;
   }

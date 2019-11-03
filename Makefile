@@ -1,5 +1,5 @@
 # Disable echoing of commands
-#MAKEFLAGS += --silent
+MAKEFLAGS += --silent
 
 # Optimize the code and show all warnings (except unused parameters)
 BUILD_FLAGS := -O3 -Wall -Wextra -pedantic -Wno-unused-parameter
