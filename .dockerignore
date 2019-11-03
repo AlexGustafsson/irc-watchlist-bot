@@ -1,0 +1,5 @@
+build
+.clang-format
+.gitignore
+README.md
+compile_commands.json

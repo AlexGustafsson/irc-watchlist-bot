@@ -88,7 +88,7 @@ format: compile_commands.json
 
 # Build and tag the docker image
 docker: $(resources) $(source) $(headers)
-	docker build -t axgn/irc-watchlist-bot
+	docker build -t axgn/irc-watchlist-bot .
 
 clean:
 	rm -rf build/*

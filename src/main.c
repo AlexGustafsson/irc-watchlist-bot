@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #include "resources/resources.h"
 #include "logging/logging.h"
