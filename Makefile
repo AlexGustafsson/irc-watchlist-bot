@@ -1,5 +1,5 @@
 # Disable echoing of commands
-MAKEFLAGS += --silent
+#MAKEFLAGS += --silent
 
 # Optimize the code and show all warnings (except unused parameters)
 BUILD_FLAGS := -O3 -Wall -Wextra -pedantic -Wno-unused-parameter
@@ -56,25 +56,22 @@ $(resourceSources): build/%.c: src/%
 	mkdir -p $(dir $@)
 
 	echo '#include "$(addsuffix .h, $(basename $(notdir $@)))"' > $@
-	xxd -i $< >> $@
-	# Null terminate
-	sed -i 's/\(0x[0-9abcdef]\{2\}\)$$/\1, 0x00/g' $@
-	# Replace generated names
-	sed -i 's/src_resources_\([a-z0-9_]\+\)_\([a-z]\+\)\[\]/RESOURCES_\U\1_\U\2[]/g' $@
-	sed -i 's/src_resources_\([a-z0-9_]\+\)_\([a-z]\+\)_len/RESOURCES_\U\1_\U\2_LENGTH/g' $@
+	$(eval resourceName := $(shell echo "$@" | sed -e 's/build\/resources\/data\///g' -e 's/.csv.c//' -e 's/[^0-9a-zA-Z]/_/g' | tr '[:lower:]' '[:upper:]'))
+	echo "char *RESOURCES_$(resourceName)[] = {" >> $@
+	sed -e 's/\(.*\)$$/  "&",/g' $< >> $@
+	echo "  0" >> $@
+	echo "};" >> $@
 
 # Turn resources into h files
 $(resourceHeaders): build/%.h: build/%.c
 	mkdir -p $(dir $@)
 
 	$(eval name := $(shell echo "$@" | sed 's/[^0-9a-zA-Z]//g'))
+	$(eval resourceName := $(shell echo "$@" | sed -e 's/build\/resources\/data\///g' -e 's/.csv.h//' -e 's/[^0-9a-zA-Z]/_/g' | tr '[:lower:]' '[:upper:]'))
 	echo "#ifndef $(name)\n#define $(name)" > $@
-	cat $< | tail -n +2 | tr -d '\n' >> $@
+	echo "#include <stdint.h>" >> $@
+	echo "extern char *RESOURCES_$(resourceName)[];" >> $@
 	echo "#endif" >> $@
-	# Replace initializations with definitions
-	sed -i 's/\s\+=[^;]\+;/;\n/g' $@
-	# Make variables extern as they are initialized in the c source file
-	sed -i 's/^\([^#]\)/extern \1/g' $@
 
 # Turn resources into objects
 $(resourceObjects): build/%.o: build/%.c build/%.h
