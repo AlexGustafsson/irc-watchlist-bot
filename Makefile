@@ -56,7 +56,7 @@ $(resourceSources): build/%.c: src/%
 	mkdir -p $(dir $@)
 
 	echo '#include "$(addsuffix .h, $(basename $(notdir $@)))"' > $@
-	$(eval resourceName := $(shell echo "$@" | sed -e 's/build\/resources\/data\///g' -e 's/.csv.c//' -e 's/[^0-9a-zA-Z]/_/g' | tr '[:lower:]' '[:upper:]'))
+	$(eval resourceName := $(shell echo "$@" | sed -e 's/build\/resources\/data\///g' -e 's/.csv.c\|.txt.c//' -e 's/[^0-9a-zA-Z]/_/g' | tr '[:lower:]' '[:upper:]'))
 	echo "char *RESOURCES_$(resourceName)[] = {" >> $@
 	sed -e 's/\(.*\)$$/  "&",/g' $< >> $@
 	echo "  0" >> $@
@@ -67,7 +67,7 @@ $(resourceHeaders): build/%.h: build/%.c
 	mkdir -p $(dir $@)
 
 	$(eval name := $(shell echo "$@" | sed 's/[^0-9a-zA-Z]//g'))
-	$(eval resourceName := $(shell echo "$@" | sed -e 's/build\/resources\/data\///g' -e 's/.csv.h//' -e 's/[^0-9a-zA-Z]/_/g' | tr '[:lower:]' '[:upper:]'))
+	$(eval resourceName := $(shell echo "$@" | sed -e 's/build\/resources\/data\///g' -e 's/.csv.h\|.txt.h//' -e 's/[^0-9a-zA-Z]/_/g' | tr '[:lower:]' '[:upper:]'))
 	echo "#ifndef $(name)\n#define $(name)" > $@
 	echo "#include <stdint.h>" >> $@
 	echo "extern char *RESOURCES_$(resourceName)[];" >> $@

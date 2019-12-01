@@ -6,6 +6,7 @@
 
 #include "resources/data/usa/general-en_US.csv.h"
 #include "resources/data/usa/nsa-en_US.csv.h"
+#include "resources/data/ignores.txt.h"
 
 #define RESOURCES_DATA_SOURCES 2
 

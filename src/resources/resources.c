@@ -42,6 +42,11 @@ char *resources_loadFile(const char *filePath) {
 }
 
 void resources_countWord(const char *word, size_t *occurances) {
+  for (size_t i = 0; RESOURCES_IGNORES[i] != 0; i++) {
+    if (strcasecmp(word, RESOURCES_IGNORES[i]) == 0)
+      return;
+  }
+
   for (size_t i = 0; RESOURCES_USA_GENERAL_EN_US[i] != 0; i++) {
     if (strcasecmp(word, RESOURCES_USA_GENERAL_EN_US[i]) == 0) {
       printf("%zu: %s\n", i, RESOURCES_USA_GENERAL_EN_US[i]);
