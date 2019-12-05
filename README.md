@@ -26,6 +26,7 @@ docker run -d \
 -e IRC_NICK='watchlist-bot' \
 -e IRC_USER='watchlist-bot' \
 -e IRC_GECOS='Watchlist Bot v0.1.2 (github.com/AlexGustafsson/irc-watchlist-bot)' \
+-e LOGGING_LEVEL='INFO' \
 axgn/irc-watchlist-bot
 ```
 
