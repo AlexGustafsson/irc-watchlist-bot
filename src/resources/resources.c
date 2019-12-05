@@ -49,7 +49,6 @@ void resources_countWord(const char *word, size_t *occurances) {
 
   for (size_t i = 0; RESOURCES_USA_GENERAL_EN_US[i] != 0; i++) {
     if (strcasecmp(word, RESOURCES_USA_GENERAL_EN_US[i]) == 0) {
-      printf("%zu: %s\n", i, RESOURCES_USA_GENERAL_EN_US[i]);
       occurances[0]++;
       break;
     }
@@ -57,7 +56,6 @@ void resources_countWord(const char *word, size_t *occurances) {
 
   for (size_t i = 0; RESOURCES_USA_NSA_EN_US[i] != 0; i++) {
     if (strcasecmp(word, RESOURCES_USA_NSA_EN_US[i]) == 0) {
-      printf("%zu: %s\n", i, RESOURCES_USA_NSA_EN_US[i]);
       occurances[1]++;
       break;
     }
@@ -68,7 +66,6 @@ uint8_t resources_bestMatch(size_t *occurances) {
   ssize_t bestIndex = -1;
   size_t bestOccurances = 0;
   for (size_t i = 0; i < RESOURCES_DATA_SOURCES; i++) {
-    printf("%zu: %zu\n", i, occurances[i]);
     if (occurances[i] > bestOccurances) {
       bestOccurances = occurances[i];
       bestIndex = i;

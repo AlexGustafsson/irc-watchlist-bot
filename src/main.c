@@ -26,6 +26,26 @@ int main(int argc, const char *argv[]) {
   char *gecos = getenv("IRC_GECOS");
   char *channel = getenv("IRC_CHANNEL");
 
+  char *logLevel = getenv("LOGGING_LEVEL");
+  if (logLevel != 0) {
+    if (strcasecmp(logLevel, "debug") == 0)
+      LOGGING_LEVEL = LOG_DEBUG;
+    else if (strcasecmp(logLevel, "info") == 0)
+      LOGGING_LEVEL = LOG_INFO;
+    else if (strcasecmp(logLevel, "notice") == 0)
+      LOGGING_LEVEL = LOG_NOTICE;
+    else if (strcasecmp(logLevel, "warning") == 0)
+      LOGGING_LEVEL = LOG_WARNING;
+    else if (strcasecmp(logLevel, "error") == 0)
+      LOGGING_LEVEL = LOG_ERROR;
+    else if (strcasecmp(logLevel, "critical") == 0)
+      LOGGING_LEVEL = LOG_CRITICAL;
+    else if (strcasecmp(logLevel, "alert") == 0)
+      LOGGING_LEVEL = LOG_ALERT;
+    else if (strcasecmp(logLevel, "emergency") == 0)
+      LOGGING_LEVEL = LOG_EMERGENCY;
+  }
+
   tls_initialize();
 
   main_irc = irc_connect(hostname, port, user, nick, gecos);

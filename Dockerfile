@@ -28,6 +28,8 @@ RUN apt update && \
 
 RUN useradd irc-watchlist-bot
 
+ENV LOGGING_LEVEL INFO
+
 WORKDIR /irc-watchlist-bot
 COPY --from=builder /irc-watchlist-bot/build/irc-watchlist-bot .
 USER irc-watchlist-bot
