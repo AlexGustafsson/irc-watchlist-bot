@@ -115,7 +115,7 @@ tls_t *tls_connect(const char *hostname, uint16_t port) {
         // Wait for the connection to be ready to read
         int status = poll(readDescriptors, 1, -1);
         if (status < -1) {
-          log(LOG_ERROR, "Could not wait for connection to be readable");
+          log(LOG_DEBUG, "Could not wait for connection to be readable");
           tls_free(tls);
 
           return 0;
@@ -298,11 +298,11 @@ size_t tls_read(tls_t *tls, char **buffer, size_t bytesToRead, int flags) {
   if (result != 1) {
     int error = SSL_get_error(tls->ssl, result);
     if (error == SSL_ERROR_WANT_READ)
-      log(LOG_ERROR, "Could not read from peer. Socket wants read");
+      log(LOG_DEBUG, "Could not read from peer. Socket wants read");
     else if (error == SSL_ERROR_WANT_WRITE)
-      log(LOG_ERROR, "Could not read from peer. Socket wants write");
+      log(LOG_DEBUG, "Could not read from peer. Socket wants write");
     else
-      log(LOG_ERROR, "Could not read from peer. Got code %d (%s)", error, ERR_error_string(error, 0));
+      log(LOG_DEBUG, "Could not read from peer. Got code %d (%s)", error, ERR_error_string(error, 0));
 
     return 0;
   }
@@ -318,11 +318,11 @@ size_t tls_write(tls_t *tls, const char *buffer, size_t bufferSize) {
   if (result != 1) {
     int error = SSL_get_error(tls->ssl, result);
     if (error == SSL_ERROR_WANT_READ)
-      log(LOG_ERROR, "Could not write to peer. Socket wants read");
+      log(LOG_DEBUG, "Could not write to peer. Socket wants read");
     else if (error == SSL_ERROR_WANT_WRITE)
-      log(LOG_ERROR, "Could not write to peer. Socket wants write");
+      log(LOG_DEBUG, "Could not write to peer. Socket wants write");
     else
-      log(LOG_ERROR, "Could not write to peer. Got code %d (%s) - %s", error, ERR_error_string(error, 0), ERR_reason_error_string(error));
+      log(LOG_DEBUG, "Could not write to peer. Got code %d (%s) - %s", error, ERR_error_string(error, 0), ERR_reason_error_string(error));
 
     return 0;
   }

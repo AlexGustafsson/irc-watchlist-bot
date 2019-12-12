@@ -7,7 +7,7 @@ docker run \
   --env IRC_CHANNEL='#random' \
   --env IRC_NICK='watchlist-bot' \
   --env IRC_USER='watchlist-bot' \
-  --env IRC_GECOS='Watchlist Bot v0.1.2 (github.com/AlexGustafsson/irc-watchlist-bot)' \
+  --env IRC_GECOS='Watchlist Bot v0.1.3 (github.com/AlexGustafsson/irc-watchlist-bot)' \
   --name irc-watchlist-bot \
   --detach \
   --restart always \
